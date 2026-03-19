@@ -7,31 +7,3 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title="Personal AI Analyst API", version="1.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
-class AnalyzeRequest(BaseModel):
-    n_rows: int = Field(default=200, ge=10, le=10000)
-
-class ColumnStat(BaseModel):
-    dtype: str; nulls: int; null_pct: float
-
-class AnalyzeResponse(BaseModel):
-    summary: str; n_rows: int; n_cols: int; stats: Dict[str, Any]
-
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
-
-@app.post("/analyze", response_model=AnalyzeResponse)
-async def analyze(req: AnalyzeRequest):
-    from src.data_ingestion import generate_synthetic_dataframe, validate_dataframe
-    from src.analyzer import generate_summary, suggest_charts
-    df = generate_synthetic_dataframe(n_rows=req.n_rows)
-    validation = validate_dataframe(df)
-    summary = generate_summary(df)
-    suggestions = suggest_charts(df)
-    return AnalyzeResponse(summary=summary, n_rows=len(df), n_cols=len(df.columns),
-        stats={"validation": validation, "suggestions": suggestions})
-
-if __name__ == "__main__":
-    import uvicorn; uvicorn.run(app, host="0.0.0.0", port=8005)
