@@ -7,3 +7,12 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title="Personal AI Analyst API", version="1.0.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+class AnalyzeRequest(BaseModel):
+    n_rows: int = Field(default=200, ge=10, le=10000)
+
+class ColumnStat(BaseModel):
+    dtype: str; nulls: int; null_pct: float
+
+class AnalyzeResponse(BaseModel):
