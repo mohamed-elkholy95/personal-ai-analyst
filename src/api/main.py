@@ -16,3 +16,12 @@ class ColumnStat(BaseModel):
     dtype: str; nulls: int; null_pct: float
 
 class AnalyzeResponse(BaseModel):
+    summary: str; n_rows: int; n_cols: int; stats: Dict[str, Any]
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
+@app.post("/analyze", response_model=AnalyzeResponse)
+async def analyze(req: AnalyzeRequest):
+    from src.data_ingestion import generate_synthetic_dataframe, validate_dataframe
