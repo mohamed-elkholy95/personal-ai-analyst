@@ -25,3 +25,13 @@ async def health():
 @app.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(req: AnalyzeRequest):
     from src.data_ingestion import generate_synthetic_dataframe, validate_dataframe
+    from src.analyzer import generate_summary, suggest_charts
+    df = generate_synthetic_dataframe(n_rows=req.n_rows)
+    validation = validate_dataframe(df)
+    summary = generate_summary(df)
+    suggestions = suggest_charts(df)
+    return AnalyzeResponse(summary=summary, n_rows=len(df), n_cols=len(df.columns),
+        stats={"validation": validation, "suggestions": suggestions})
+
+if __name__ == "__main__":
+    import uvicorn; uvicorn.run(app, host="0.0.0.0", port=8005)
